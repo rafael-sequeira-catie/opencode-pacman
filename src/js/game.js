@@ -134,20 +134,51 @@ function decideGhost( game, g ) {
   // Sin salida (callejon): permitir el giro de 180.
   const choices = options.length ? options : [ '' + OPPOSITE[ g.dir ] ];
 
-  // Elegir objetivo segun modo actual.
+  // Elegir objetivo segun modo y personalidad.
   let tx, ty;
   if ( game.mode === 'scatter' ) {
     const corner = SCATTER_CORNERS[ g.kind ];
     tx = corner.x;
     ty = corner.y;
   } else {
-    // Chase: Blinky persigue a Pac-Man; el resto aleatorio de momento (step 3).
-    if ( g.kind === 'blinky' ) {
-      tx = Math.round( p.x );
-      ty = Math.round( p.y );
-    } else {
-      g.dir = choices[ Math.floor( Math.random() * choices.length ) ];
-      return;
+    // Chase: cada fantasma tiene su propia IA.
+    const px = Math.round( p.x );
+    const py = Math.round( p.y );
+    switch ( g.kind ) {
+      case 'blinky':
+        tx = px;
+        ty = py;
+        break;
+      case 'pinky': {
+        // 4 celdas delante de Pac-Man segun su direccion.
+        const pd = DIRS[ p.dir ];
+        tx = px + pd.x * 4;
+        ty = py + pd.y * 4;
+        break;
+      }
+      case 'inky': {
+        // Vector doble: desde Blinky hacia 2 celdas delante de Pac-Man.
+        const blinky = game.ghosts.find( ( h ) => h.kind === 'blinky' );
+        const pd = DIRS[ p.dir ];
+        const ax = px + pd.x * 2;
+        const ay = py + pd.y * 2;
+        tx = blinky ? blinky.x + ( ax - blinky.x ) * 2 : ax;
+        ty = blinky ? blinky.y + ( ay - blinky.y ) * 2 : ay;
+        break;
+      }
+      case 'clyde': {
+        // Persigue si >8 celdas; si no, va a su esquina.
+        const dist = Math.abs( g.x - px ) + Math.abs( g.y - py );
+        if ( dist > 8 ) {
+          tx = px;
+          ty = py;
+        } else {
+          const corner = SCATTER_CORNERS.clyde;
+          tx = corner.x;
+          ty = corner.y;
+        }
+        break;
+      }
     }
   }
 
