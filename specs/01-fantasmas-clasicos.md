@@ -1,6 +1,6 @@
 # SPEC 01 — Fantasmas clásicos con personalidades propias
 
-> **Estado:** Borrador
+> **Estado:** Approved
 > **Depende de:** —
 > **Fecha:** 2026-08-24
 > **Objetivo:** Reemplazar los dos fantasmas actuales por los cuatro clásicos (Blinky, Pinky, Inky, Clyde), cada uno con su IA propia, alternancia global dispersión/persecución y salida escalonada de la pen.
