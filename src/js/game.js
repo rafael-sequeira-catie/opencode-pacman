@@ -25,6 +25,8 @@ const SCATTER_CORNERS = {
   clyde:  { x: 0,  y: 30 },  // abajo-izquierda
 };
 
+const PEN_EXIT_ROW = 11;
+
 // Crea una partida nueva. Copia MAZE (pristino) a game.grid para poder comer
 // dots sin destruir el original, y reiniciar.
 function createGame() {
@@ -43,6 +45,7 @@ function createGame() {
     grid,
     mode: 'scatter',
     modeTimer: 0,
+    frame: 0,
     pacman: {
       x: PACMAN_START.x,
       y: PACMAN_START.y,
@@ -56,6 +59,8 @@ function createGame() {
       dir: 'up',
       speed: GHOST_SPEED,
       kind: g.kind,
+      state: 'pen',
+      releaseFrame: g.releaseFrame,
     } ) ),
   };
 }
@@ -197,10 +202,34 @@ function decideGhost( game, g ) {
   g.dir = best;
 }
 
+function updateGhostState( game, g ) {
+  if ( g.state === 'pen' && game.frame >= g.releaseFrame ) {
+    g.state = 'exiting';
+    g.dir = 'up';
+  }
+  if ( g.state === 'exiting' && aligned( g.x ) && g.y <= PEN_EXIT_ROW ) {
+    g.state = 'active';
+  }
+}
+
 function moveGhost( game, g ) {
   const grid = game.grid;
   const width = grid[ 0 ].length;
 
+  updateGhostState( game, g );
+
+  if ( g.state === 'pen' ) return;
+
+  if ( g.state === 'exiting' ) {
+    if ( aligned( g.x ) ) g.x = Math.round( g.x );
+    g.dir = 'up';
+    const d = DIRS[ g.dir ];
+    g.x += d.x * g.speed;
+    g.y += d.y * g.speed;
+    return;
+  }
+
+  // active
   if ( aligned( g.x ) && aligned( g.y ) ) {
     g.x = Math.round( g.x );
     g.y = Math.round( g.y );
@@ -226,6 +255,8 @@ function resetPositions( game ) {
     g.x = GHOST_STARTS[ i ].x;
     g.y = GHOST_STARTS[ i ].y;
     g.dir = 'up';
+    g.state = 'pen';
+    g.releaseFrame = game.frame + GHOST_STARTS[ i ].releaseFrame;
   } );
 }
 
