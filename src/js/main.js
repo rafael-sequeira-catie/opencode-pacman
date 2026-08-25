@@ -42,6 +42,7 @@ if ( actionBtn ) actionBtn.addEventListener( 'click', startGame );
 function loop() {
   frame++;
   if ( game.state === 'playing' ) {
+    game.frame = frame;
     update( game );
     if ( game.state === 'won' ) showOverlay( 'GANASTE', 'win', 'Reiniciar' );
     else if ( game.state === 'lost' ) showOverlay( 'PERDISTE', 'lose', 'Reiniciar' );
